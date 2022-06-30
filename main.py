@@ -1,4 +1,5 @@
 import requests
+import pandas
 from bs4 import BeautifulSoup
 
 r = requests.get("https://www.century21.com/real-estate/fredericksburg-va/LCVAFREDERICKSBURG/")
@@ -8,25 +9,30 @@ soup = BeautifulSoup(c, "html.parser")
 all = soup.find_all("div",{"class":"property-card-primary-info"})
 find_all = all[0].find("a",{"class":"listing-price"}).text.replace("\n","").replace(" ","")
 
+list_prop = []
 for item in all:
-    print(item.find("a",{"class":"listing-price"}).text.replace("\n","").replace(" ",""))
-    print(item.find_all("div",{"class":"property-address"})[0].text.replace("\n","").replace(" ",""))
-    print(item.find_all("div",{"class":"property-city"})[0].text.replace("\n","").replace(" ",""))
+    property = {}
+    property['address']=item.find_all("div", {"class": "property-address"})[0].text.replace("\n", "").replace(" ", "")
+    property['city']=item.find_all("div", {"class": "property-city"})[0].text.replace("\n", "").replace(" ", "")
+    property['price']=item.find("a", {"class": "listing-price"}).text.replace("\n", "").replace(" ", "")
     try:
-        print(item.find("div",{"class":"property-beds"}).find("strong").text)
+        property['beds']=item.find("div", {"class": "property-beds"}).find("strong").text
     except:
-        print(None)
+        property['beds']=None
     try:
-        print(item.find("div",{"class":"property-baths"}).find("strong").text)
+        property['baths']=item.find("div", {"class": "property-baths"}).find("strong").text
     except:
-        print(None)
+        property['baths']=None
     try:
-        print(item.find("div",{"class":"property-half-baths"}).find("strong").text)
+        property['half_baths']=item.find("div", {"class": "property-half-baths"}).find("strong").text
     except:
-        print(None)
+        property['half_baths']=None
     try:
-        print(item.find("div",{"class":"property-sqft"}).find("strong").text)
+        property['sqft']=item.find("div", {"class": "property-sqft"}).find("strong").text
     except:
-        print(None)
+        property['sqft']=None
 
-    print(" ")
+    list_prop.append(property)
+df = pandas.DataFrame(list_prop)
+
+df.to_csv("fdxg_properties.csv")
